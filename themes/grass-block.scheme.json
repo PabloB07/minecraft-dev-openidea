@@ -1,0 +1,67 @@
+// "Grass Block": editor colour scheme for the Minecraft Dev plugin (the
+// counterpart of an IntelliJ .icls file). Merged over the UI theme's tokens.
+{
+  "name": "Grass Block",
+  "tokens": {
+    // Syntax (grass green keyword, gold string, diamond teal type)
+    "--syn-keyword": "#7fc46b",
+    "--syn-keyword-control": "#7fc46b",
+    "--syn-string": "#e3d28a",
+    "--syn-string-escape": "#a8d98f",
+    "--syn-type": "#5fc9a8",
+    "--syn-type-parameter": "#5fc9a8",
+    "--syn-function": "#e5c36b",
+    "--syn-function-call": "#cbd6c4",
+    "--syn-comment": "#5f7a63",
+    "--syn-comment-style": "normal",
+    "--syn-doc-comment": "#6a8a6e",
+    "--syn-docstring": "#8fb071",
+    "--syn-annotation": "#a8d98f",
+    "--syn-decorator": "#a8d98f",
+    "--syn-number": "#6fb4d8",
+    "--syn-punct": "#9aa8a0",
+    "--syn-variable": "#cbd6c4",
+    "--syn-param": "#cbd6c4",
+    "--syn-property": "#7fc46b",
+    "--syn-constant": "#e58fa3",
+    "--syn-builtin": "#5fc9a8",
+    "--syn-self": "#d6849c",
+    "--syn-keyword-arg": "#a8d98f",
+    "--syn-predefined": "#a8d98f",
+    "--syn-escape": "#a8d98f",
+    "--syn-regexp": "#a8d98f",
+    "--syn-tag": "#7fc46b",
+
+    // Editor
+    "--editor-bg": "#11160f",
+    "--editor-fg": "#cbd6c4",
+    "--editor-caret-line": "#151d13",
+    "--editor-selection": "#234a26",
+    "--editor-selection-inactive": "#1c251b",
+    "--editor-border": "#283527",
+    "--editor-gutter-fg": "#3f4d3a",
+    "--editor-gutter-bg": "#11160f",
+    "--matched-brace-bg": "#283527",
+    "--matched-brace-fg": "#d9e6d9",
+    "--error-underline": "#e05555",
+    "--warning-underline": "#c9963c",
+
+    // Console ANSI (green first)
+    "--ansi-black": "#11160f",
+    "--ansi-red": "#e07070",
+    "--ansi-green": "#7fc46b",
+    "--ansi-yellow": "#e3d28a",
+    "--ansi-blue": "#6fb4d8",
+    "--ansi-magenta": "#a8a0e0",
+    "--ansi-cyan": "#5fc9a8",
+    "--ansi-white": "#cbd6c4",
+    "--ansi-bright-black": "#3f4d3a",
+    "--ansi-bright-red": "#f07a7a",
+    "--ansi-bright-green": "#95d98a",
+    "--ansi-bright-yellow": "#f0e39f",
+    "--ansi-bright-blue": "#8fd0f0",
+    "--ansi-bright-magenta": "#c0b0f0",
+    "--ansi-bright-cyan": "#7fe0c0",
+    "--ansi-bright-white": "#e6f0e6"
+  }
+}

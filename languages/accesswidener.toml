@@ -1,0 +1,6 @@
+id = "accesswidener"
+name = "Minecraft Access Widener"
+extensions = ["accesswidener"]
+line-comment = "#"
+indent = { tab-size = 4, insert-spaces = true }
+ui-mode = "Properties files"

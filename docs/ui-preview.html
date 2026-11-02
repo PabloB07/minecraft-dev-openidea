@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Minecraft Dev for OpenIDEA — UI surface</title>
+<style>
+  :root {
+    /* tokens from themes/grass-block.theme.json */
+    --bg-app:#11160f; --bg-elev:#171f16; --bg-popup:#1c251b; --bg-hover:#222d20;
+    --bg-selected:#234a26; --bg-selected-strong:#2c5a31; --border:#1c251b; --border-strong:#34462f;
+    --fg-strong:#d9e6d9; --fg:#c9dcc9; --fg-secondary:#93ac93; --fg-muted:#7f967f; --fg-subtle:#677c67;
+    --accent:#4f9e3a; --link:#6fc45f; --border-popup:#283527;
+    /* tokens from themes/grass-block.scheme.json */
+    --syn-keyword:#7fc46b; --syn-string:#e3d28a; --syn-type:#5fc9a8; --syn-comment:#5f7a63;
+    --syn-number:#6fb4d8; --syn-punct:#9aa8a0; --syn-fn:#e5c36b;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    background:#0b0f0a; color:var(--fg);
+    font: 13px/1.5 "Segoe UI", Inter, system-ui, sans-serif;
+    padding: 28px; display:flex; flex-direction:column; gap:26px;
+  }
+  h1 { font-size:18px; font-weight:600; color:var(--fg-strong); }
+  h1 .badge { background:var(--bg-selected); color:var(--link); border:1px solid var(--border-strong);
+    border-radius:5px; font-size:11px; padding:2px 8px; margin-left:10px; vertical-align:2px; }
+  h2 { font-size:13px; font-weight:600; color:var(--fg-secondary); text-transform:uppercase; letter-spacing:.08em; }
+  .note { color:var(--fg-muted); max-width:820px; }
+  .note code { color:var(--link); background:var(--bg-elev); padding:1px 5px; border-radius:4px; font-size:12px; }
+
+  /* ---------- IDE window frame ---------- */
+  .ide {
+    background:var(--bg-app); border:1px solid var(--border-strong); border-radius:10px;
+    overflow:hidden; box-shadow:0 24px 70px rgba(0,0,0,.55); max-width:1080px;
+  }
+  .titlebar { display:flex; align-items:center; gap:8px; padding:9px 14px; background:var(--bg-elev);
+    border-bottom:1px solid var(--border); }
+  .dot { width:11px; height:11px; border-radius:50%; }
+  .dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+  .titlebar .name { margin-left:8px; color:var(--fg-muted); font-size:12px; }
+  .toolbar { display:flex; align-items:center; gap:10px; padding:8px 14px; border-bottom:1px solid var(--border);
+    background:var(--bg-elev); }
+  .searchbox { flex:1; display:flex; align-items:center; gap:8px; background:var(--bg-app);
+    border:1px solid var(--border-strong); border-radius:6px; padding:6px 10px; color:var(--fg-muted); }
+  .searchbox .kbd { margin-left:auto; font-size:11px; border:1px solid var(--border-strong);
+    border-radius:4px; padding:1px 6px; color:var(--fg-subtle); }
+  .toolbar .accent { background:var(--accent); color:#fff; border-radius:6px; padding:5px 12px; font-weight:600; }
+
+  .main { display:grid; grid-template-columns:190px 1fr; min-height:340px; }
+  .tree { border-right:1px solid var(--border); padding:12px 10px; background:var(--bg-elev); font-size:12px; }
+  .tree .grp { color:var(--fg-subtle); text-transform:uppercase; font-size:10px; letter-spacing:.1em; margin:10px 0 4px; }
+  .tree .it { padding:3px 8px; border-radius:5px; color:var(--fg-secondary); display:flex; gap:7px; }
+  .tree .it.on { background:var(--bg-selected); color:var(--fg-strong); }
+  .editor { padding:14px 18px; font: 12.5px/1.65 "Cascadia Code","JetBrains Mono",Consolas,monospace;
+    white-space:pre; overflow:hidden; position:relative; }
+  .ln { color:var(--fg-subtle); user-select:none; display:inline-block; width:26px; }
+  .k{color:var(--syn-keyword)} .s{color:var(--syn-string)} .t{color:var(--syn-type)}
+  .c{color:var(--syn-comment)} .n{color:var(--syn-number)} .f{color:var(--syn-fn)} .p{color:var(--syn-punct)} .d{color:var(--fg)}
+
+  .caretline { position:absolute; left:0; right:0; height:1.55em; background:#ffffff08;
+    border-top:1px solid #ffffff10; }
+
+  /* ---------- Search Everywhere / Actions popup ---------- */
+  .popup { position:absolute; top:52px; right:26px; width:520px; background:var(--bg-popup);
+    border:1px solid var(--border-popup); border-radius:10px; box-shadow:0 18px 50px rgba(0,0,0,.6);
+    overflow:hidden; }
+  .popup .ph { display:flex; align-items:center; gap:8px; padding:9px 12px; border-bottom:1px solid var(--border); }
+  .popup .ph .q { color:var(--fg-strong); }
+  .popup .ph .tab { margin-left:auto; font-size:10px; color:var(--fg-subtle); border:1px solid var(--border-strong); border-radius:4px; padding:1px 6px; }
+  .popup .row { display:flex; align-items:center; gap:10px; padding:8px 12px; }
+  .popup .row.on { background:var(--bg-selected); }
+  .popup .row .cat { margin-left:auto; font-size:10px; color:var(--fg-subtle); }
+  .popup .row svg { flex:none; }
+  .popup .row .lbl { color:var(--fg-strong); }
+  .popup .row.hint .lbl { color:var(--fg-secondary); }
+
+  /* ---------- notification balloon ---------- */
+  .balloon { position:absolute; right:26px; bottom:22px; width:360px; background:var(--bg-popup);
+    border:1px solid var(--border-popup); border-left:3px solid var(--accent); border-radius:8px;
+    padding:11px 14px; box-shadow:0 12px 34px rgba(0,0,0,.5); }
+  .balloon .t { color:var(--fg-strong); font-weight:600; margin-bottom:2px; }
+  .balloon .b { color:var(--fg-secondary); font-size:12px; }
+
+  /* ---------- Plugins settings ---------- */
+  .settings { background:var(--bg-elev); border:1px solid var(--border-strong); border-radius:10px; max-width:1080px; }
+  .settings .hd { padding:12px 16px; border-bottom:1px solid var(--border); color:var(--fg-strong); font-weight:600; }
+  .settings .tabs { display:flex; gap:18px; padding:10px 16px 0; border-bottom:1px solid var(--border); font-size:12px; }
+  .settings .tabs .on { color:var(--accent); border-bottom:2px solid var(--accent); padding-bottom:8px; font-weight:600; }
+  .settings .tabs span:not(.on) { color:var(--fg-muted); padding-bottom:8px; }
+  .prow { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid var(--border); }
+  .picon { width:38px; height:38px; border-radius:8px; background:linear-gradient(145deg,#3f8f3a,#275c22);
+    display:grid; place-items:center; font-size:19px; }
+  .pmeta .nm { color:var(--fg-strong); font-weight:600; }
+  .pmeta .ds { color:var(--fg-muted); font-size:12px; }
+  .pmeta .ver { color:var(--fg-subtle); font-size:11px; }
+  .pact { margin-left:auto; display:flex; align-items:center; gap:10px; }
+  .toggle { width:38px; height:20px; border-radius:11px; background:var(--accent); position:relative; }
+  .toggle::after { content:""; position:absolute; right:2px; top:2px; width:16px; height:16px; border-radius:50%; background:#fff; }
+  .btn { border:1px solid var(--border-strong); border-radius:6px; padding:5px 12px; color:var(--fg-secondary); font-size:12px; }
+  .btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600; }
+  .themerow { display:flex; align-items:center; gap:10px; padding:10px 16px 10px 66px; }
+  .swatch { width:22px; height:22px; border-radius:6px; border:1px solid var(--border-strong); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(115px,1fr)); gap:8px; padding:14px 16px; }
+  .sw { border:1px solid var(--border-strong); border-radius:8px; overflow:hidden; }
+  .sw .bar { height:26px; }
+  .sw .lb { padding:6px 8px; font-size:11px; color:var(--fg-secondary); background:var(--bg-elev); }
+</style>
+</head>
+<body>
+
+<h1>Minecraft Dev — its UI surface in OpenIDEA <span class="badge">mockup · not a screenshot</span></h1>
+<p class="note">
+The plugin has <b>no plugin UI</b>: OpenIDEA's sandbox has no webviews or dialogs, so the whole surface is
+(1)&nbsp;<b>commands</b> in Search&nbsp;Everywhere / the keymap, (2)&nbsp;<b>notification balloons</b>, and
+(3)&nbsp;the contributed <b>theme</b> + <b>languages</b> in Settings. Commands are also invokable with an argument,
+e.g. <code>executeAction("plugin.minecraft-dev.insert-main","fabric")</code>.
+</p>
+
+<!-- ===================== IDE window: editor + Search Everywhere ===================== -->
+<div class="ide">
+  <div class="titlebar">
+    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span class="name">OpenIDEA — ExampleMod (Fabric · 1.21.1) — Grass Block theme</span>
+  </div>
+  <div class="toolbar">
+    <div class="accent">▶</div>
+    <div class="searchbox">🔍 <span class="q" style="color:var(--fg-strong)">Minecraft Dev</span>
+      <span class="kbd">⇧⇧</span></div>
+  </div>
+  <div class="main">
+    <div class="tree">
+      <div class="grp">Project</div>
+      <div class="it">▾ src/main</div>
+      <div class="it on">☕ ExampleMod.java</div>
+      <div class="it">{ } fabric.mod.json</div>
+      <div class="it">{ } pack.mcmeta</div>
+      <div class="grp">resources</div>
+      <div class="it">▸ assets/examplemod</div>
+      <div class="it">▸ data</div>
+      <div class="grp">Gradle</div>
+      <div class="it">⚙ build.gradle</div>
+      <div class="it">⚙ gradle.properties</div>
+    </div>
+    <div class="editor"><span class="caretline" style="top:64px"></span><span class="ln">1</span><span class="k">package</span> <span class="d">com.example.examplemod;</span>
+<span class="ln">2</span>
+<span class="ln">3</span><span class="k">import</span> <span class="t">net.fabricmc.api.ModInitializer</span><span class="p">;</span>
+<span class="ln">4</span><span class="k">import</span> <span class="t">org.slf4j.Logger</span><span class="p">;</span>
+<span class="ln">5</span><span class="k">import</span> <span class="t">org.slf4j.LoggerFactory</span><span class="p">;</span>
+<span class="ln">6</span>
+<span class="ln">7</span><span class="c">// "{{MOD_ID}}" and "{{MOD_NAME}}" were filled from the detection</span>
+<span class="ln">8</span><span class="k">public class</span> <span class="t">ExampleMod</span> <span class="k">implements</span> <span class="t">ModInitializer</span> <span class="p">{</span>
+<span class="ln">9</span>    <span class="k">public static final</span> <span class="t">String</span> <span class="d">MOD_ID</span> <span class="p">=</span> <span class="s">"examplemod"</span><span class="p">;</span>
+<span class="ln">10</span>    <span class="k">public static final</span> <span class="t">Logger</span> <span class="d">LOGGER</span> <span class="p">=</span> <span class="f">LoggerFactory</span><span class="p">.</span><span class="f">getLogger</span><span class="p">(</span><span class="d">MOD_ID</span><span class="p">);</span>
+<span class="ln">11</span>    <span class="c">/* pack_format 48 — from the detected 1.21.1 */</span>
+<span class="ln">12</span>    <span class="p">▮</span>
+<span class="ln">13</span><span class="p">}</span>
+    </div>
+    <div style="position:relative">
+      <div class="popup">
+        <div class="ph">🔍 <span class="q">Minecraft Dev</span> <span class="tab">Actions · ⇥</span></div>
+        <div class="row on">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 3h12v3H2zM2 8h8v3H2z" stroke="#7fc46b" stroke-width="1.3"/></svg>
+          <span class="lbl">Minecraft Dev: Detect Platform</span><span class="cat">Minecraft Dev</span>
+        </div>
+        <div class="row">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="#7fc46b" stroke-width="1.3"/><path d="M5 8l2 2 4-4" stroke="#7fc46b" stroke-width="1.3"/></svg>
+          <span class="lbl">Minecraft Dev: Insert Main Class</span><span class="cat">arg: fabric</span>
+        </div>
+        <div class="row">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 4l5-2 5 2v8l-5 2-5-2z" stroke="#7fc46b" stroke-width="1.3"/></svg>
+          <span class="lbl">Minecraft Dev: Insert build.gradle</span><span class="cat">Minecraft Dev</span>
+        </div>
+        <div class="row">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="2" stroke="#7fc46b" stroke-width="1.3"/><path d="M2 6.5h12" stroke="#7fc46b" stroke-width="1.3"/></svg>
+          <span class="lbl">Minecraft Dev: Insert pack.mcmeta</span><span class="cat">format 48</span>
+        </div>
+        <div class="row">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#7fc46b" stroke-width="1.3"/><path d="M8 5v3l2 1" stroke="#7fc46b" stroke-width="1.3"/></svg>
+          <span class="lbl">Minecraft Dev: Insert Event Handler</span><span class="cat">Minecraft Dev</span>
+        </div>
+        <div class="row hint"><span class="lbl" style="margin-left:22px">… + 9 more · bind a key in Settings › Keymap</span></div>
+      </div>
+
+      <div class="balloon">
+        <div class="t">Minecraft Dev</div>
+        <div class="b">Inserted pack.mcmeta — <b>pack_format 48</b> (Minecraft 1.21.1 detected, comment omitted for ≥1.21)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== Settings › Plugins ===================== -->
+<div class="settings">
+  <div class="hd">Settings — Plugins</div>
+  <div class="tabs"><span class="on">Installed</span><span>Marketplace</span><span style="margin-left:auto">⚙ Reload</span></div>
+  <div class="prow">
+    <div class="picon">⛏️</div>
+    <div class="pmeta">
+      <div class="nm">Minecraft Dev <span style="color:var(--accent)">✓ enabled</span></div>
+      <div class="ds">Platform detection, scaffolding snippets and asset templates for Fabric…BungeeCord.</div>
+      <div class="ver">1.0.0 · WebAssembly · ai.l0ng.openidea/plugins/minecraft-dev · by OpenDevMC</div>
+    </div>
+    <div class="pact">
+      <span style="color:var(--fg-subtle);font-size:12px">Errors</span>
+      <span class="toggle"></span>
+      <span class="btn">Disable</span><span class="btn">⚙</span>
+    </div>
+  </div>
+  <div class="themerow">
+    <b style="color:var(--fg-strong)">Theme:</b>
+    <span class="swatch" style="background:#11160f"></span>
+    <span class="swatch" style="background:#4f9e3a"></span>
+    <span class="swatch" style="background:#234a26"></span>
+    <span style="color:var(--fg)">Grass Block <span style="color:var(--fg-muted)">(dark)</span></span>
+    <span class="btn primary" style="margin-left:auto">Apply</span>
+    <span class="btn">Use Default Theme</span>
+  </div>
+  <div class="themerow" style="padding-top:0">
+    <b style="color:var(--fg-strong)">Languages:</b>
+    <span style="color:var(--fg-secondary)">Minecraft Metadata (.mcmeta)</span>
+    <span style="color:var(--fg-secondary)">Minecraft Access Widener (.accesswidener)</span>
+  </div>
+</div>
+
+<!-- ===================== Palette ===================== -->
+<h2>Grass Block — token palette (from the shipped theme JSON)</h2>
+<div class="grid">
+  <div class="sw"><div class="bar" style="background:#11160f"></div><div class="lb">--bg-app</div></div>
+  <div class="sw"><div class="bar" style="background:#171f16"></div><div class="lb">--bg-elev</div></div>
+  <div class="sw"><div class="bar" style="background:#234a26"></div><div class="lb">--bg-selected</div></div>
+  <div class="sw"><div class="bar" style="background:#4f9e3a"></div><div class="lb">--accent</div></div>
+  <div class="sw"><div class="bar" style="background:#6fc45f"></div><div class="lb">--link</div></div>
+  <div class="sw"><div class="bar" style="background:#7fc46b"></div><div class="lb">--syn-keyword</div></div>
+  <div class="sw"><div class="bar" style="background:#e3d28a"></div><div class="lb">--syn-string</div></div>
+  <div class="sw"><div class="bar" style="background:#5fc9a8"></div><div class="lb">--syn-type</div></div>
+  <div class="sw"><div class="bar" style="background:#5f7a63"></div><div class="lb">--syn-comment</div></div>
+  <div class="sw"><div class="bar" style="background:#6fb4d8"></div><div class="lb">--syn-number</div></div>
+</div>
+
+</body>
+</html>

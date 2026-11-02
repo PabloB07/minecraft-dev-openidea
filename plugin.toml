@@ -1,0 +1,91 @@
+# Minecraft Dev for OpenIDEA — plugin manifest.
+# Package layout follows templates/theme-plugin (a folder with plugin.toml is a
+# plugin package) plus the code plugin conventions of plugins/README.md:
+# `wasm` points at the built WebAssembly component, built with ./build.sh.
+id = "minecraft-dev"
+name = "Minecraft Dev"
+version = "1.0.0"
+description = "Minecraft modding support for OpenIDEA: platform detection, scaffolding snippets and asset templates for Fabric, Quilt, Forge, NeoForge, Bukkit/Spigot/Paper, Sponge, Velocity, BungeeCord and Architectury."
+authors = ["OpenDevMC"]
+change-notes = "1.0.0 — first port of MinecraftDev to OpenIDEA: project detection, per-platform boilerplate, mixins, pack.mcmeta and resource asset templates."
+openidea-api = "0.1"
+wasm = "dist/plugin.wasm"
+permissions = ["project-read", "editor-read", "editor-write"]
+
+# A Minecraft-flavoured theme (green accent), in the theme-plugin template style.
+[[contributes.themes]]
+path = "themes/grass-block.theme.json"
+editor-scheme = "themes/grass-block.scheme.json"
+
+# Minecraft-specific file types the built-in languages don't map.
+[[contributes.languages]]
+path = "languages/mcmeta.toml"
+
+[[contributes.languages]]
+path = "languages/accesswidener.toml"
+
+# Static command declarations (the plugin may register more at runtime).
+[[contributes.commands]]
+id = "detect"
+title = "Minecraft Dev: Detect Platform"
+category = "Minecraft Dev"
+
+[[contributes.commands]]
+id = "insert-main"
+title = "Minecraft Dev: Insert Main Class"
+category = "Minecraft Dev"
+
+[[contributes.commands]]
+id = "insert-build-gradle"
+title = "Minecraft Dev: Insert build.gradle"
+category = "Minecraft Dev"
+
+[[contributes.commands]]
+id = "insert-gradle-properties"
+title = "Minecraft Dev: Insert gradle.properties"
+category = "Minecraft Dev"
+
+[[contributes.commands]]
+id = "insert-mod-metadata"
+title = "Minecraft Dev: Insert Mod Metadata"
+category = "Minecraft Dev"
+
+[[contributes.commands]]
+id = "insert-mixins"
+title = "Minecraft Dev: Insert Mixins Config"
+category = "Minecraft Dev"
+
+[[contributes.commands]]
+id = "insert-pack-mcmeta"
+title = "Minecraft Dev: Insert pack.mcmeta"
+category = "Minecraft Dev"
+
+[[contributes.commands]]
+id = "insert-asset"
+title = "Minecraft Dev: Insert Asset JSON"
+category = "Minecraft Dev"
+
+[[contributes.commands]]
+id = "insert-registry"
+title = "Minecraft Dev: Insert Registry Code"
+category = "Minecraft Dev"
+
+[[contributes.commands]]
+id = "insert-event"
+title = "Minecraft Dev: Insert Event Handler"
+category = "Minecraft Dev"
+
+[[contributes.commands]]
+id = "insert-command"
+title = "Minecraft Dev: Insert Command Class"
+category = "Minecraft Dev"
+
+[[contributes.commands]]
+id = "insert-mixin"
+title = "Minecraft Dev: Insert Mixin Class"
+category = "Minecraft Dev"
+
+[[contributes.commands]]
+id = "help"
+title = "Minecraft Dev: Help & Supported Platforms"
+category = "Minecraft Dev"

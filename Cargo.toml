@@ -1,0 +1,23 @@
+[package]
+name = "openidea-plugin-minecraft-dev"
+version = "1.0.0"
+edition = "2024"
+publish = false
+description = "Minecraft modding support for OpenIDEA (ported from MinecraftDev for IntelliJ)."
+license = "Apache-2.0"
+
+# Standalone: not a member of any parent workspace (different target).
+[workspace]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wit-bindgen = "0.63"
+
+[profile.release]
+opt-level = "s"
+lto = true
+strip = true
+codegen-units = 1
+panic = "abort"
